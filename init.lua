@@ -1,13 +1,4 @@
 -- disable netrw at the very start of your init.lua (strongly advised)
-vim.g.loaded_netrw = 1
-vim.g.loaded_netrwPlugin = 1
-if vim.fn.has('win32') == 1 then
-	--require('dap').adapters.codelldb.executable.command = "codelldb.cmd"
-	vim.opt.shell = "powershell"
-end
--- set termguicolors to enable highlight groups
-vim.opt.termguicolors = true
-
 require('options')
 require('plugins')
 require('keybinds')

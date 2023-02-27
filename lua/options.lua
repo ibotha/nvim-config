@@ -1,3 +1,9 @@
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+-- set termguicolors to enable highlight groups
+vim.opt.termguicolors = true
+
+
 --Set completeopt to have a better completion experience
 -- :help completeopt
 -- menuone: popup even when there's only one match
@@ -26,3 +32,11 @@ vim.g.mapleader = " "
 vim.opt.number = true
 vim.opt.expandtab = true
 vim.opt.shiftwidth = 4
+
+vim.cmd([[
+ let &shell = has('win32') ? 'powershell' : 'pwsh'
+        let &shellcmdflag = '-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;'
+        let &shellredir = '2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode'
+        let &shellpipe = '2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode'
+        set shellquote= shellxquote=
+]])

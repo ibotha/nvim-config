@@ -12,7 +12,7 @@ end
 vim.cmd([[
   augroup packer_user_config
     autocmd!
-    autocmd BufWritePost plugins.lua source <afile> | PackerCompile
+    autocmd BufWritePost plugins.lua source <afile> | PackerSync
   augroup end
 ]])
 
@@ -34,7 +34,7 @@ return require('packer').startup(function(use)
     -- Mason LSP
     use {
         'williamboman/mason-lspconfig.nvim',
-        requires = {"neovim/nvim-lspconfig", "hrsh7th/cmp-nvim-lsp"},
+        requires = {"neovim/nvim-lspconfig", "hrsh7th/nvim-cmp"},
         after = {"mason.nvim"},
         config = function ()
             require("mason-lspconfig").setup{
@@ -51,6 +51,7 @@ return require('packer').startup(function(use)
                         capabilities = capabilities
                     }
                 end,
+                ["rust_analyzer"] = function() end,
                 ["lua_ls"] = function ()
                     require('lspconfig').lua_ls.setup {
                         settings = {
@@ -75,11 +76,54 @@ return require('packer').startup(function(use)
             require("mason-nvim-dap").setup({
                 ensure_installed = {"codelldb"},
                 automatic_installation = true,
-                automatic_setup = true,
+                --automatic_setup = true,
             })
 
-            require('mason-nvim-dap').setup_handlers {}
+            --require('mason-nvim-dap').setup_handlers {}
         end,
+    }
+
+    --Rust Tools
+    use {
+        'simrat39/rust-tools.nvim',
+        after={"mason-lspconfig.nvim", "mason-nvim-dap.nvim"},
+        config = function ()
+            local rt = require('rust-tools')
+
+            local codelldb_command = "codelldb"
+            if vim.fn.has('win32') == 1 then
+                codelldb_command = "codelldb.cmd"
+            end
+
+            rt.setup{
+                server = {
+                    on_attach=function(_, bufnr)
+                        local wk = require("which-key")
+
+                        -- Hover actions
+                        wk.register({
+                            ["<C-space>"] = {rt.hover_actions.hover_actions, "Actions"},
+                        }, {
+                            buffer = bufnr,
+                            mode = "n"
+                        })
+
+                        -- Code action groups
+                        wk.register({["<Leader>a"]={rt.code_action_group.code_action_group, "Code Actions"}}, { buffer = bufnr, mode="n" })
+                    end,
+                },
+                dap = {
+                    adapter = {
+                        type="server",
+                        port="${port}",
+                        executable={
+                            command=codelldb_command,
+                            args={"--port", "${port}"}
+                        }
+                    }
+                }
+            }
+        end
     }
 
     -- Completion framework:
@@ -218,12 +262,14 @@ return require('packer').startup(function(use)
                         override_file_sorter = true,     -- override the file sorter
                         case_mode = "smart_case",        -- or "ignore_case" or "respect_case"
                         -- the default case_mode is "smart_case"
-                    }
+                    },
                 }
             }
             require('telescope').load_extension('fzf')
         end
     }
+
+    use {'mhinz/vim-startify'}
 
     -- Nvim Tree
     use {
@@ -232,7 +278,27 @@ return require('packer').startup(function(use)
             'nvim-tree/nvim-web-devicons', -- optional, for file icons
         },
         config = function ()
-            require("nvim-tree").setup()
+            require("nvim-tree").setup{
+                prefer_startup_root = true,
+                sync_root_with_cwd = true,
+                view={
+                    float={enable=true}
+                }
+            }
+        end
+    }
+
+    -- Which Key
+    use {
+        "folke/which-key.nvim",
+        config = function()
+            vim.o.timeout = true
+            vim.o.timeoutlen = 300
+            require("which-key").setup {
+                -- your configuration comes here
+                -- or leave it empty to use the default settings
+                -- refer to the configuration section below
+            }
         end
     }
 
