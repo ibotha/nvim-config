@@ -10,10 +10,10 @@ local ensure_packer = function()
 end
 
 vim.cmd([[
-  augroup packer_user_config
-    autocmd!
-    autocmd BufWritePost plugins.lua source <afile> | PackerSync
-  augroup end
+augroup packer_user_config
+autocmd!
+autocmd BufWritePost plugins.lua source <afile> | PackerSync
+augroup end
 ]])
 
 local packer_bootstrap = ensure_packer()
@@ -53,7 +53,9 @@ return require('packer').startup(function(use)
                 end,
                 ["rust_analyzer"] = function() end,
                 ["lua_ls"] = function ()
+                    local capabilities = require('cmp_nvim_lsp').default_capabilities()
                     require('lspconfig').lua_ls.setup {
+                        capabilities = capabilities,
                         settings = {
                             Lua = {
                                 diagnostics = {
@@ -86,7 +88,7 @@ return require('packer').startup(function(use)
     --Rust Tools
     use {
         'simrat39/rust-tools.nvim',
-        after={"mason-lspconfig.nvim", "mason-nvim-dap.nvim"},
+        after={"mason-lspconfig.nvim", "mason-nvim-dap.nvim", "which-key.nvim"},
         config = function ()
             local rt = require('rust-tools')
 
@@ -94,22 +96,19 @@ return require('packer').startup(function(use)
             if vim.fn.has('win32') == 1 then
                 codelldb_command = "codelldb.cmd"
             end
-
             rt.setup{
                 server = {
                     on_attach=function(_, bufnr)
                         local wk = require("which-key")
 
-                        -- Hover actions
                         wk.register({
-                            ["<C-space>"] = {rt.hover_actions.hover_actions, "Actions"},
+                            name="Rust Tools",
+                            ["a"] = {rt.hover_actions.hover_actions, "Hover actions"},
+                            ["c"] = {rt.code_action_group.code_action_group, "Code actions"},
                         }, {
-                            buffer = bufnr,
-                            mode = "n"
+                            prefix = "<leader>r",
+                            buffer = bufnr
                         })
-
-                        -- Code action groups
-                        wk.register({["<Leader>a"]={rt.code_action_group.code_action_group, "Code Actions"}}, { buffer = bufnr, mode="n" })
                     end,
                 },
                 dap = {
@@ -129,15 +128,16 @@ return require('packer').startup(function(use)
     -- Completion framework:
     use {
         'hrsh7th/nvim-cmp',
-        'hrsh7th/cmp-nvim-lsp',
+        requires = {'hrsh7th/cmp-nvim-lsp',
         'hrsh7th/cmp-nvim-lua',
         'hrsh7th/cmp-nvim-lsp-signature-help',
         'hrsh7th/cmp-vsnip',
         'hrsh7th/cmp-path',
         'hrsh7th/cmp-buffer',
-        'hrsh7th/vim-vsnip',
+        'hrsh7th/vim-vsnip'},
         config = function ()
             local cmp = require'cmp'
+
             cmp.setup({
                 -- Enable LSP snippets
                 snippet = {
@@ -145,6 +145,7 @@ return require('packer').startup(function(use)
                         vim.fn["vsnip#anonymous"](args.body)
                     end,
                 },
+                -- Installed sources:
                 mapping = {
                     ['<C-p>'] = cmp.mapping.select_prev_item(),
                     ['<C-n>'] = cmp.mapping.select_next_item(),
@@ -158,9 +159,8 @@ return require('packer').startup(function(use)
                     ['<CR>'] = cmp.mapping.confirm({
                         behavior = cmp.ConfirmBehavior.Insert,
                         select = true,
-                    })
+                    }),
                 },
-                -- Installed sources:
                 sources = {
                     { name = 'path' },                              -- file paths
                     { name = 'nvim_lsp', keyword_length = 3 },      -- from language server
@@ -213,7 +213,9 @@ return require('packer').startup(function(use)
     }
 
     -- Theme
-    use { "ellisonleao/gruvbox.nvim",
+    use {
+        "ellisonleao/gruvbox.nvim",
+
         config = function ()
             require("gruvbox").setup({
                 undercurl = true,
@@ -240,9 +242,23 @@ return require('packer').startup(function(use)
     use {
         'phaazon/hop.nvim',
         branch = 'v2', -- optional but strongly recommended
+        after = {'which-key.nvim'},
         config = function()
             -- you can configure Hop the way you like here; see :h hop-config
-            require'hop'.setup {}
+            local hop = require'hop'
+            local wk = require'which-key'
+            local directions = require('hop.hint').HintDirection
+
+            hop.setup {}
+
+            wk.register({["<leader>h"]={function () hop.hint_char1() end, "Hop"}},{mode="n"})
+
+            wk.register({
+                ['f']={function () hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true }) end, "Hop Next"},
+                ['F']={function () hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true }) end, "Hop Previous"},
+                ['t']={function () hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true, hint_offset = -1 }) end, "Hop Before Next"},
+                ['T']={function () hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true, hint_offset = -1 }) end, "Hop Before Previous"},
+            }, {mode='n'});
         end
     }
 
@@ -252,7 +268,7 @@ return require('packer').startup(function(use)
     use {
         'nvim-telescope/telescope.nvim', tag = '0.1.1',
         requires = { {'nvim-lua/plenary.nvim'} },
-        after = {"telescope-fzf-native.nvim"},
+        after = {"telescope-fzf-native.nvim", 'project.nvim'},
         config = function ()
             require('telescope').setup{
                 extentions = {
@@ -265,6 +281,7 @@ return require('packer').startup(function(use)
                     },
                 }
             }
+            require('telescope').load_extension('projects')
             require('telescope').load_extension('fzf')
         end
     }
@@ -281,6 +298,11 @@ return require('packer').startup(function(use)
             require("nvim-tree").setup{
                 prefer_startup_root = true,
                 sync_root_with_cwd = true,
+                respect_buf_cwd = true,
+                update_focused_file = {
+                    enable = true,
+                    update_root = true
+                },
                 view={
                     float={enable=true}
                 }
@@ -298,6 +320,37 @@ return require('packer').startup(function(use)
                 -- your configuration comes here
                 -- or leave it empty to use the default settings
                 -- refer to the configuration section below
+            }
+        end
+    }
+
+    -- Floating Terminal
+    use {
+        'voldikss/vim-floaterm',
+        after = {'which-key.nvim'},
+        config = function ()
+            local wk = require'which-key'
+
+            vim.cmd([[
+            let g:floaterm_width = 0.4
+            let g:floaterm_height = 0.9
+            let g:floaterm_borderchars = "─│─│╭╮╯╰"
+            let g:floaterm_position = "right"
+            let g:floaterm_wintype = "vsplit"
+            ]]);
+
+            wk.register({
+                ['<C-t>']={function () vim.cmd([[FloatermToggle myfloat]]) end, "toggle"},
+            }, {mode={'n','t'}})
+        end
+    }
+
+    -- Project
+    use {
+        'ahmedkhalf/project.nvim',
+        config = function ()
+            require'project_nvim'.setup {
+                detection_methods = {'pattern'}
             }
         end
     }
