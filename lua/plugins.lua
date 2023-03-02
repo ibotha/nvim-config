@@ -355,6 +355,23 @@ return require('packer').startup(function(use)
         end
     }
 
+    -- NeoGit
+    use {
+        'TimUntersberger/neogit',
+        requires = 'nvim-lua/plenary.nvim',
+        after = {"which-key.nvim"},
+        config = function ()
+            local neogit = require('neogit')
+            local wk = require('which-key')
+
+            neogit.setup {}
+
+            wk.register({
+                g={function () neogit.open() end, "Git"}
+            },{mode='n', prefix="<leader>"})
+        end
+    }
+
     if packer_bootstrap then
         require('packer').sync()
     end
