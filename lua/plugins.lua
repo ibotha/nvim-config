@@ -431,6 +431,7 @@ return require('packer').startup(function(use)
         'TimUntersberger/neogit',
         requires = 'nvim-lua/plenary.nvim',
         after = {"which-key.nvim"},
+        commit = "64245bb",
         config = function ()
             local neogit = require('neogit')
             local wk = require('which-key')
@@ -439,6 +440,7 @@ return require('packer').startup(function(use)
 
             wk.register({
                 g={function () neogit.open() end, "Git"}
+
             },{mode='n', prefix="<leader>"})
         end
     }
