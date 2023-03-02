@@ -73,7 +73,7 @@ return require('packer').startup(function(use)
     use {
         "jay-babu/mason-nvim-dap.nvim",
         requires = {"mfussenegger/nvim-dap"},
-        after = {"mason.nvim"},
+        after = {"mason.nvim", "which-key.nvim"},
         config = function ()
             require("mason-nvim-dap").setup({
                 ensure_installed = {"codelldb"},
@@ -82,6 +82,29 @@ return require('packer').startup(function(use)
             })
 
             --require('mason-nvim-dap').setup_handlers {}
+            local wk = require'which-key'
+            local dap = require'dap'
+            local dap_widgets = require'dap.ui.widgets'
+
+            dap.defaults.fallback.terminal_win_cmd = 'tabnew'
+            vim.fn.sign_define('DapBreakpoint', {text='🛑', texthl='DapBreakpoint', linehl='', numhl=''})
+
+            wk.register({
+                name= "DAP",
+                b={dap.toggle_breakpoint, "Toggle Breakpoint"},
+                c={dap.continue, "Continue"},
+                o={dap.step_over, "Step Over"},
+                i={dap.step_into, "Step Into"},
+                r={dap.repl.open, "REPL"},
+                h={dap_widgets.hover, "Hover"},
+                p={dap_widgets.preview, "Preview"},
+                f={function()
+                    dap_widgets.centered_float(dap_widgets.frames)
+                end, "Frames"},
+                s={function()
+                    dap_widgets.centered_float(dap_widgets.scopes)
+                end, "Scopes"},
+            }, {mode='n', prefix='<leader>d'})
         end,
     }
 
@@ -105,6 +128,13 @@ return require('packer').startup(function(use)
                             name="Rust Tools",
                             ["a"] = {rt.hover_actions.hover_actions, "Hover actions"},
                             ["c"] = {rt.code_action_group.code_action_group, "Code actions"},
+                            ["r"] = {rt.runnables.runnables, "Runnables"},
+                            ["e"] = {rt.expand_macro.expand_macro, "Expand Macro"},
+                            ["d"] = {rt.debuggables.debuggables, "Debuggables"},
+                            ["j"] = {function() rt.move_item.move_item(false) end, "Move Down"},
+                            ["k"] = {function() rt.move_item.move_item(true) end, "Move Up"},
+                            ["~"] = {rt.open_cargo_toml.open_cargo_toml, "Open cargo.toml"},
+                            ["p"] = {rt.parent_module.parent_module, "Parent Module"},
                         }, {
                             prefix = "<leader>r",
                             buffer = bufnr
@@ -117,8 +147,9 @@ return require('packer').startup(function(use)
                         port="${port}",
                         executable={
                             command=codelldb_command,
-                            args={"--port", "${port}"}
-                        }
+                            args={"--port", "${port}"},
+                            detached = not vim.fn.has('win32'),
+                        },
                     }
                 }
             }
@@ -268,7 +299,7 @@ return require('packer').startup(function(use)
     use {
         'nvim-telescope/telescope.nvim', tag = '0.1.1',
         requires = { {'nvim-lua/plenary.nvim'} },
-        after = {"telescope-fzf-native.nvim", 'project.nvim'},
+        after = {"telescope-fzf-native.nvim", 'project.nvim', 'which-key.nvim'},
         config = function ()
             require('telescope').setup{
                 extentions = {
@@ -283,6 +314,37 @@ return require('packer').startup(function(use)
             }
             require('telescope').load_extension('projects')
             require('telescope').load_extension('fzf')
+            local wk = require("which-key")
+
+            -- Location bindings
+            wk.register({
+                f = {
+                    name = "Find",
+                    f = {function () require('telescope.builtin').find_files() end, "Files"},
+                    b = {function () require('telescope.builtin').buffers() end, "Buffers"},
+                    k = {function () require('telescope.builtin').keymaps() end, "Keymaps"},
+                    t = {function () require('telescope.builtin').live_grep() end, "Text"},
+                    d = {function () require('telescope.builtin').diagnostics() end, "Diagnostics"},
+                    p = {function () require'telescope'.extensions.projects.projects{} end, "Projects"},
+                },
+                l = {
+                    name = "LSP",
+                    r = {function () require('telescope.builtin').lsp_references() end, "References"},
+                    [','] = {function () require('telescope.builtin').lsp_incoming_calls() end, "Incoming Calls"},
+                    ['.'] = {function () require('telescope.builtin').lsp_outgoing_calls() end, "Outgoing Calls"},
+                    d = {function () require('telescope.builtin').lsp_definitions() end, "Definition"},
+                    t = {function () require('telescope.builtin').lsp_type_definitions() end, "Type Definition"},
+                    i = {function () require('telescope.builtin').lsp_implementations() end, "Implementation"},
+                    s = {
+                        name="Symbols",
+                        d = {function () require('telescope.builtin').lsp_document_symbols() end, "In Document"},
+                        w = {function () require('telescope.builtin').lsp_dynamic_workspace_symbols() end, "In Workspace"},
+                    }
+                }
+            }, {
+                mode = "n",
+                prefix = "<leader>",
+            })
         end
     }
 
@@ -307,6 +369,15 @@ return require('packer').startup(function(use)
                     float={enable=true}
                 }
             }
+            local wk = require("which-key")
+
+            -- Location bindings
+            wk.register({
+                e = {function () require('nvim-tree').focus() end, "Explore"}
+            }, {
+                mode = "n",
+                prefix = "<leader>",
+            })
         end
     }
 
@@ -340,7 +411,7 @@ return require('packer').startup(function(use)
             ]]);
 
             wk.register({
-                ['<C-t>']={function () vim.cmd([[FloatermToggle myfloat]]) end, "toggle"},
+                ['<C-t>']={function () vim.cmd([[FloatermToggle]]) end, "toggle"},
             }, {mode={'n','t'}})
         end
     }
