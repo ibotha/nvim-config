@@ -8,7 +8,6 @@ local ensure_packer = function()
     end
     return false
 end
-
 vim.cmd([[
 augroup packer_user_config
 autocmd!
@@ -35,7 +34,7 @@ return require('packer').startup(function(use)
     use {
         'williamboman/mason-lspconfig.nvim',
         requires = {"neovim/nvim-lspconfig", "hrsh7th/nvim-cmp"},
-        after = {"mason.nvim"},
+        after = {"mason.nvim", 'neodev.nvim'},
         config = function ()
             require("mason-lspconfig").setup{
                 ensure_installed = {"lua_ls", "rust_analyzer"}
@@ -56,13 +55,6 @@ return require('packer').startup(function(use)
                     local capabilities = require('cmp_nvim_lsp').default_capabilities()
                     require('lspconfig').lua_ls.setup {
                         capabilities = capabilities,
-                        settings = {
-                            Lua = {
-                                diagnostics = {
-                                    globals = { "vim" }
-                                }
-                            }
-                        }
                     }
                 end,
             })
@@ -139,6 +131,17 @@ return require('packer').startup(function(use)
         end,
     }
 
+    --Neodev: Sets up lua-lsp for nvim configurations so that it isn't so ass.
+    use {
+        'folke/neodev.nvim',
+        config = function ()
+            require("neodev").setup({
+                -- add any options here, or leave empty to use the default settings
+            })
+        end
+    }
+
+
     --Rust Tools
     use {
         'simrat39/rust-tools.nvim',
@@ -214,11 +217,11 @@ return require('packer').startup(function(use)
                     -- Add tab support
                     ['<S-Tab>'] = cmp.mapping.select_prev_item(),
                     ['<Tab>'] = cmp.mapping.select_next_item(),
-                    ['<C-S-f>'] = cmp.mapping.scroll_docs(-4),
-                    ['<C-f>'] = cmp.mapping.scroll_docs(4),
+                    ['<C-k>'] = cmp.mapping.scroll_docs(-4),
+                    ['<C-j>'] = cmp.mapping.scroll_docs(4),
                     ['<C-Space>'] = cmp.mapping.complete(),
                     ['<C-e>'] = cmp.mapping.close(),
-                    ['<CR>'] = cmp.mapping.confirm({
+                    ['<S-CR>'] = cmp.mapping.confirm({
                         behavior = cmp.ConfirmBehavior.Insert,
                         select = true,
                     }),
@@ -271,6 +274,12 @@ return require('packer').startup(function(use)
                     max_file_lines = nil,
                 }
             }
+        vim.cmd([[
+        set foldmethod=expr
+        set foldexpr=nvim_treesitter#foldexpr()
+        set nofoldenable                     " Disable folding at startup.
+        ]])
+
         end,
     }
 
@@ -438,7 +447,6 @@ return require('packer').startup(function(use)
         'TimUntersberger/neogit',
         requires = 'nvim-lua/plenary.nvim',
         after = {"which-key.nvim"},
-        commit = "64245bb",
         config = function ()
             local neogit = require('neogit')
             local wk = require('which-key')
