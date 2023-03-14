@@ -289,8 +289,8 @@ return require('packer').startup(function(use)
                 invert_signs = false,
                 invert_tabline = false,
                 invert_intend_guides = false,
-                inverse = true, -- invert background for search, diffs, statuslines and errors
-                contrast = "", -- can be "hard", "soft" or empty string
+                inverse = false, -- invert background for search, diffs, statuslines and errors
+                contrast = "soft", -- can be "hard", "soft" or empty string
                 palette_overrides = {},
                 overrides = {},
                 dim_inactive = false,
@@ -423,27 +423,6 @@ return require('packer').startup(function(use)
                 -- or leave it empty to use the default settings
                 -- refer to the configuration section below
             }
-        end
-    }
-
-    -- Floating Terminal
-    use {
-        'voldikss/vim-floaterm',
-        after = {'which-key.nvim'},
-        config = function ()
-            local wk = require'which-key'
-
-            vim.cmd([[
-            let g:floaterm_width = 0.4
-            let g:floaterm_height = 0.9
-            let g:floaterm_borderchars = "─│─│╭╮╯╰"
-            let g:floaterm_position = "right"
-            let g:floaterm_wintype = "vsplit"
-            ]]);
-
-            wk.register({
-                ['<C-t>']={function () vim.cmd([[FloatermToggle]]) end, "toggle"},
-            }, {mode={'n','t'}})
         end
     }
 

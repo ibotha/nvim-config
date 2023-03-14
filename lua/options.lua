@@ -25,10 +25,12 @@ vim.opt.number = true
 vim.opt.expandtab = true
 vim.opt.shiftwidth = 4
 
+if vim.fn.has('win32') then
 vim.cmd([[
-let &shell = has('win32') ? 'powershell' : 'pwsh'
+let &shell = 'powershell'
 let &shellcmdflag = '-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;'
 let &shellredir = '2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode'
 let &shellpipe = '2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode'
 set shellquote= shellxquote=
 ]])
+end
