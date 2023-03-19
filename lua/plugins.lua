@@ -1,45 +1,28 @@
-local ensure_packer = function()
-    local fn = vim.fn
-    local install_path = fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
-    if fn.empty(fn.glob(install_path)) > 0 then
-        fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
-        vim.cmd [[packadd packer.nvim]]
-        return true
-    end
-    return false
-end
-vim.cmd([[
-augroup packer_user_config
-autocmd!
-autocmd BufWritePost plugins.lua source <afile> | PackerSync
-augroup end
-]])
-
-local packer_bootstrap = ensure_packer()
-
-vim.cmd("packadd packer.nvim")
-
-return require('packer').startup(function(use)
-    use {"wbthomason/packer.nvim"}
-
-    -- Mason for LSP and DAP installations
-    use {
+return {
+    -- Mason
+    {
         'williamboman/mason.nvim',
         config = function ()
             require('mason').setup()
         end
-    }
+    },
 
     -- Mason LSP
-    use {
+    {
         'williamboman/mason-lspconfig.nvim',
-        requires = {"neovim/nvim-lspconfig", "hrsh7th/nvim-cmp"},
-        after = {"mason.nvim", 'neodev.nvim'},
+        dependencies = {"neovim/nvim-lspconfig", "hrsh7th/nvim-cmp"},
         config = function ()
             require("mason-lspconfig").setup{
                 ensure_installed = {"lua_ls", "rust_analyzer"}
             }
 
+            local on_attach = function(buffer)
+                local wk = require('which-key')
+
+                wk.register({
+                    f = function () vim.lsp.buf.format() end
+                }, {prefix = "<leader>l", buffer=buffer})
+            end
             require("mason-lspconfig").setup_handlers({
                 -- The first entry (without a key) will be the default handler
                 -- and will be called for each installed server that doesn't have
@@ -47,7 +30,8 @@ return require('packer').startup(function(use)
                 function (server_name) -- default handler (optional)
                     local capabilities = require('cmp_nvim_lsp').default_capabilities()
                     require("lspconfig")[server_name].setup {
-                        capabilities = capabilities
+                        capabilities = capabilities,
+                        on_attach = on_attach
                     }
                 end,
                 ["rust_analyzer"] = function() end,
@@ -55,6 +39,7 @@ return require('packer').startup(function(use)
                     local capabilities = require('cmp_nvim_lsp').default_capabilities()
                     require('lspconfig').lua_ls.setup {
                         capabilities = capabilities,
+                        on_attach = on_attach
                     }
                 end,
             })
@@ -90,13 +75,12 @@ return require('packer').startup(function(use)
             autocmd CursorHold * lua vim.diagnostic.open_float(nil, { focusable = false })
             ]])
         end,
-    }
+    },
 
     -- Mason DAP
-    use {
+    {
         "jay-babu/mason-nvim-dap.nvim",
-        requires = {"mfussenegger/nvim-dap"},
-        after = {"mason.nvim", "which-key.nvim"},
+        dependencies = {"mfussenegger/nvim-dap"},
         config = function ()
             require("mason-nvim-dap").setup({
                 ensure_installed = {"codelldb"},
@@ -129,23 +113,22 @@ return require('packer').startup(function(use)
                 end, "Scopes"},
             }, {mode='n', prefix='<leader>d'})
         end,
-    }
+    },
 
     --Neodev: Sets up lua-lsp for nvim configurations so that it isn't so ass.
-    use {
+    {
         'folke/neodev.nvim',
         config = function ()
             require("neodev").setup({
                 -- add any options here, or leave empty to use the default settings
             })
         end
-    }
-
+    },
 
     --Rust Tools
-    use {
+    {
         'simrat39/rust-tools.nvim',
-        after={"mason-lspconfig.nvim", "mason-nvim-dap.nvim", "which-key.nvim"},
+        ft='rust',
         config = function ()
             local rt = require('rust-tools')
 
@@ -188,12 +171,12 @@ return require('packer').startup(function(use)
                 }
             }
         end
-    }
+    },
 
     -- Completion framework:
-    use {
+    {
         'hrsh7th/nvim-cmp',
-        requires = {'hrsh7th/cmp-nvim-lsp',
+        dependencies = {'hrsh7th/cmp-nvim-lsp',
         'hrsh7th/cmp-nvim-lua',
         'hrsh7th/cmp-nvim-lsp-signature-help',
         'hrsh7th/cmp-vsnip',
@@ -212,16 +195,14 @@ return require('packer').startup(function(use)
                 },
                 -- Installed sources:
                 mapping = {
-                    ['<C-p>'] = cmp.mapping.select_prev_item(),
-                    ['<C-n>'] = cmp.mapping.select_next_item(),
+                    ['<C-k>'] = cmp.mapping.select_prev_item(),
+                    ['<C-j>'] = cmp.mapping.select_next_item(),
                     -- Add tab support
-                    ['<S-Tab>'] = cmp.mapping.select_prev_item(),
-                    ['<Tab>'] = cmp.mapping.select_next_item(),
-                    ['<C-k>'] = cmp.mapping.scroll_docs(-4),
-                    ['<C-j>'] = cmp.mapping.scroll_docs(4),
+                    ['<C-h>'] = cmp.mapping.scroll_docs(-4),
+                    ['<C-l>'] = cmp.mapping.scroll_docs(4),
                     ['<C-Space>'] = cmp.mapping.complete(),
                     ['<C-e>'] = cmp.mapping.close(),
-                    ['<S-CR>'] = cmp.mapping.confirm({
+                    ['<Tab>'] = cmp.mapping.confirm({
                         behavior = cmp.ConfirmBehavior.Insert,
                         select = true,
                     }),
@@ -254,10 +235,10 @@ return require('packer').startup(function(use)
                 },
             })
         end
-    }
+    },
 
     -- TreeSitter
-    use {
+    {
         'nvim-treesitter/nvim-treesitter',
         config = function ()
             require('nvim-treesitter.configs').setup {
@@ -281,12 +262,13 @@ return require('packer').startup(function(use)
         ]])
 
         end,
-    }
+    },
 
     -- Theme
-    use {
+    {
         "ellisonleao/gruvbox.nvim",
-
+        lazy = false,
+        priority = 1000,
         config = function ()
             require("gruvbox").setup({
                 undercurl = true,
@@ -307,13 +289,12 @@ return require('packer').startup(function(use)
             })
             vim.cmd("colorscheme gruvbox")
         end
-    }
+    },
 
     -- Hop
-    use {
+    {
         'phaazon/hop.nvim',
         branch = 'v2', -- optional but strongly recommended
-        after = {'which-key.nvim'},
         config = function()
             -- you can configure Hop the way you like here; see :h hop-config
             local hop = require'hop'
@@ -331,15 +312,15 @@ return require('packer').startup(function(use)
                 ['T']={function () hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true, hint_offset = -1 }) end, "Hop Before Previous"},
             }, {mode='n'});
         end
-    }
+    },
 
-    use {'nvim-telescope/telescope-fzf-native.nvim', run = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release; cmake --build build --config Release; cmake --install build --prefix build' }
+    {'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release; cmake --build build --config Release; cmake --install build --prefix build' },
 
     -- Telescope
-    use {
+    {
         'nvim-telescope/telescope.nvim', tag = '0.1.1',
-        requires = { {'nvim-lua/plenary.nvim'} },
-        after = {"telescope-fzf-native.nvim", 'project.nvim', 'which-key.nvim'},
+        dependencies = { 'nvim-lua/plenary.nvim', 'ahmedkhalf/project.nvim' },
+        lazy = false,
         config = function ()
             require('telescope').setup{
                 extentions = {
@@ -363,7 +344,9 @@ return require('packer').startup(function(use)
                     f = {function () require('telescope.builtin').find_files() end, "Files"},
                     b = {function () require('telescope.builtin').buffers() end, "Buffers"},
                     k = {function () require('telescope.builtin').keymaps() end, "Keymaps"},
-                    t = {function () require('telescope.builtin').live_grep() end, "Text"},
+                    r = {function () require('telescope.builtin').resume() end, "Resume"},
+                    t = {function () require('telescope.builtin').current_buffer_fuzzy_find() end, "Text in buffer"},
+                    T = {function () require('telescope.builtin').live_grep() end, "Text in workspace"},
                     d = {function () require('telescope.builtin').diagnostics() end, "Diagnostics"},
                     p = {function () require'telescope'.extensions.projects.projects{} end, "Projects"},
                 },
@@ -373,6 +356,7 @@ return require('packer').startup(function(use)
                     [','] = {function () require('telescope.builtin').lsp_incoming_calls() end, "Incoming Calls"},
                     ['.'] = {function () require('telescope.builtin').lsp_outgoing_calls() end, "Outgoing Calls"},
                     d = {function () require('telescope.builtin').lsp_definitions() end, "Definition"},
+                    D = {function () require('telescope.builtin').diagnostics() end, "Diagnostics"},
                     t = {function () require('telescope.builtin').lsp_type_definitions() end, "Type Definition"},
                     i = {function () require('telescope.builtin').lsp_implementations() end, "Implementation"},
                     s = {
@@ -386,14 +370,14 @@ return require('packer').startup(function(use)
                 prefix = "<leader>",
             })
         end
-    }
+    },
 
-    use {'mhinz/vim-startify'}
+    {'mhinz/vim-startify'},
 
     -- Nvim Tree
-    use {
+    {
         'nvim-tree/nvim-tree.lua',
-        requires = {
+        dependencies = {
             'nvim-tree/nvim-web-devicons', -- optional, for file icons
         },
         config = function ()
@@ -419,10 +403,10 @@ return require('packer').startup(function(use)
                 prefix = "<leader>",
             })
         end
-    }
+    },
 
     -- Which Key
-    use {
+    {
         "folke/which-key.nvim",
         config = function()
             vim.o.timeout = true
@@ -430,22 +414,22 @@ return require('packer').startup(function(use)
             require("which-key").setup {
             }
         end
-    }
+    },
 
     -- Project
-    use {
+    {
         'ahmedkhalf/project.nvim',
         config = function ()
             require'project_nvim'.setup {
             }
         end
-    }
+    },
 
     -- NeoGit
-    use {
+    {
         'TimUntersberger/neogit',
-        requires = 'nvim-lua/plenary.nvim',
-        after = {"which-key.nvim"},
+        dependencies = 'nvim-lua/plenary.nvim',
+        commit = "7be1e9358aaa617b0391e61952d936203e99fcf0",
         config = function ()
             local neogit = require('neogit')
             local wk = require('which-key')
@@ -457,16 +441,12 @@ return require('packer').startup(function(use)
 
             },{mode='n', prefix="<leader>"})
         end
-    }
+    },
 
-    use {
+    {
         'lewis6991/gitsigns.nvim',
         config = function ()
             require('gitsigns').setup()
         end
     }
-
-    if packer_bootstrap then
-        require('packer').sync()
-    end
-end)
+}
