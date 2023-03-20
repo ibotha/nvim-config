@@ -25,7 +25,7 @@ vim.opt.number = true
 vim.opt.expandtab = true
 vim.opt.shiftwidth = 4
 
-if vim.fn.has('win32') then
+if vim.loop.os_uname().sysname == "Windows_NT" then
 vim.cmd([[
 let &shell = 'powershell'
 let &shellcmdflag = '-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;'

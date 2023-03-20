@@ -15,14 +15,17 @@ return {
             require("mason-lspconfig").setup{
                 ensure_installed = {"lua_ls", "rust_analyzer"}
             }
+            vim.api.nvim_create_autocmd('LspAttach', {
+                group = vim.api.nvim_create_augroup('UserLspConfig', {}),
+                callback = function(ev)
+                    -- Enable completion triggered by <c-x><c-o>
+                    local wk = require('which-key')
 
-            local on_attach = function(buffer)
-                local wk = require('which-key')
-
-                wk.register({
-                    f = function () vim.lsp.buf.format() end
-                }, {prefix = "<leader>l", buffer=buffer})
-            end
+                    wk.register({
+                        f = {function () vim.lsp.buf.format() end, "Format"}
+                    }, {prefix = "<leader>l", buffer=ev.buf})
+                end,
+            })
             require("mason-lspconfig").setup_handlers({
                 -- The first entry (without a key) will be the default handler
                 -- and will be called for each installed server that doesn't have
@@ -389,9 +392,6 @@ return {
                     enable = true,
                     update_root = true
                 },
-                view={
-                    float={enable=true}
-                }
             }
             local wk = require("which-key")
 
