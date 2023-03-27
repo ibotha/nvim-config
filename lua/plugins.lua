@@ -23,7 +23,8 @@ return {
 
                     wk.register({
                         f = { function() vim.lsp.buf.format() end, "Format" },
-                        n = { function() vim.lsp.buf.rename() end, "Rename" }
+                        n = { function() vim.lsp.buf.rename() end, "Rename" },
+                        c = { function() vim.lsp.buf.code_action() end, "Code Action" }
                     }, { prefix = "<leader>l", buffer = ev.buf })
                 end,
             })
@@ -136,7 +137,7 @@ return {
             local rt = require('rust-tools')
 
             local codelldb_command = "codelldb"
-            if vim.fn.has('win32') == 1 then
+            if vim.loop.os_uname == "Windows_NT" then
                 codelldb_command = "codelldb.cmd"
             end
             rt.setup {
@@ -203,20 +204,23 @@ return {
                     -- Add tab support
                     ['<C-h>'] = cmp.mapping.scroll_docs(-4),
                     ['<C-l>'] = cmp.mapping.scroll_docs(4),
-                    ['<C-Space>'] = cmp.mapping.complete(),
+                    ['<C-a>'] = cmp.mapping.complete(),
                     ['<C-e>'] = cmp.mapping.close(),
                     ['<Tab>'] = cmp.mapping.confirm({
                         behavior = cmp.ConfirmBehavior.Insert,
                         select = true,
                     }),
                 },
+                completion = {
+                    autocomplete = false
+                },
                 sources = {
                     { name = 'path' },                                       -- file paths
-                    { name = 'nvim_lsp',               keyword_length = 3 }, -- from language server
+                    { name = 'nvim_lsp' }, -- from language server
                     { name = 'nvim_lsp_signature_help' },                    -- display function signatures with current parameter emphasized
-                    { name = 'nvim_lua',               keyword_length = 2 }, -- complete neovim's Lua runtime API such vim.lsp.*
-                    { name = 'buffer',                 keyword_length = 2 }, -- source current buffer
-                    { name = 'vsnip',                  keyword_length = 2 }, -- nvim-cmp source for vim-vsnip
+                    { name = 'nvim_lua' }, -- complete neovim's Lua runtime API such vim.lsp.*
+                    { name = 'buffer' },                                     -- source current buffer
+                    { name = 'vsnip' },                                      -- nvim-cmp source for vim-vsnip
                     { name = 'calc' },                                       -- source for math calculation
                 },
                 window = {
@@ -268,15 +272,46 @@ return {
 
     -- Theme
     {
-        "ellisonleao/gruvbox.nvim",
+        "folke/tokyonight.nvim",
         lazy = false,
         priority = 1000,
         config = function()
-            require("gruvbox").setup({
-                contrast = "soft", -- can be "hard", "soft" or empty string
-                transparent_mode = true
+            require("tokyonight").setup({
+                -- your configuration comes here
+                -- or leave it empty to use the default settings
+                style = "moon",         -- The theme comes in three styles, `storm`, `moon`, a darker variant `night` and `day`
+                light_style = "day",    -- The theme is used when the background is set to light
+                transparent = true,     -- Enable this to disable setting the background color
+                terminal_colors = true, -- Configure the colors used when opening a `:terminal` in Neovim
+                styles = {
+                    -- Style to be applied to different syntax groups
+                    -- Value is any valid attr-list value for `:help nvim_set_hl`
+                    comments = { italic = true },
+                    keywords = { italic = true },
+                    functions = {},
+                    variables = {},
+                    -- Background styles. Can be "dark", "transparent" or "normal"
+                    sidebars = "transparent",     -- style for sidebars, see below
+                    floats = "dark",              -- style for floating windows
+                },
+                sidebars = { "qf", "help" },      -- Set a darker background on sidebar-like windows. For example: `["qf", "vista_kind", "terminal", "packer"]`
+                day_brightness = 0.3,             -- Adjusts the brightness of the colors of the **Day** style. Number between 0 and 1, from dull to vibrant colors
+                hide_inactive_statusline = false, -- Enabling this option, will hide inactive statuslines and replace them with a thin border instead. Should work with the standard **StatusLine** and **LuaLine**.
+                dim_inactive = false,             -- dims inactive windows
+                lualine_bold = false,             -- When `true`, section headers in the lualine theme will be bold
+                --- You can override specific color groups to use other groups or a hex color
+                --- function will be called with a ColorScheme table
+                ---@param colors ColorScheme
+                on_colors = function(colors)
+                end,
+                --- You can override specific highlights to use other groups or a hex color
+                --- function will be called with a Highlights and ColorScheme table
+                ---@param highlights Highlights
+                ---@param colors ColorScheme
+                on_highlights = function(highlights, colors)
+                end,
             })
-            vim.cmd("colorscheme gruvbox")
+            vim.cmd("colorscheme tokyonight")
         end
     },
 
@@ -287,7 +322,7 @@ return {
         config = function()
             require('lualine').setup {
                 options = {
-                    theme = 'gruvbox'
+                    theme = 'horizon'
                 },
                 sections = {
                     lualine_a = { 'mode' },
@@ -414,9 +449,15 @@ return {
         dependencies = {
             'nvim-tree/nvim-web-devicons', -- optional, for file icons
         },
+        lazy = false,
         config = function()
             require("nvim-tree").setup {
                 prefer_startup_root = true,
+                actions = {
+                    open_file = {
+                        quit_on_open = true,
+                    }
+                }
             }
             local wk = require("which-key")
 
