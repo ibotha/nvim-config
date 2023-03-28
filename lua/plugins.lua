@@ -352,32 +352,10 @@ return {
             -- you can configure Hop the way you like here; see :h hop-config
             local hop = require 'hop'
             local wk = require 'which-key'
-            local directions = require('hop.hint').HintDirection
 
             hop.setup {}
 
             wk.register({ ["<leader>h"] = { function() hop.hint_char1() end, "Hop" } }, { mode = "n" })
-
-            wk.register({
-                ['f'] = { function() hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true }) end,
-                    "Hop Next" },
-                ['F'] = { function() hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true }) end,
-                    "Hop Previous" },
-                ['t'] = { function()
-                    hop.hint_char1({
-                        direction = directions.AFTER_CURSOR,
-                        current_line_only = true,
-                        hint_offset = -1
-                    })
-                end, "Hop Before Next" },
-                ['T'] = { function()
-                    hop.hint_char1({
-                        direction = directions.BEFORE_CURSOR,
-                        current_line_only = true,
-                        hint_offset = -1
-                    })
-                end, "Hop Before Previous" },
-            }, { mode = 'n' });
         end
     },
     {
