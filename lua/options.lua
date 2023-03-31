@@ -22,7 +22,8 @@ vim.wo.foldenable = false
 
 vim.g.mapleader = " "
 vim.opt.number = true
-vim.opt.expandtab = true
+vim.opt.tabstop = 4
+vim.opt.expandtab = false
 vim.opt.shiftwidth = 4
 
 if vim.loop.os_uname().sysname == "Windows_NT" then

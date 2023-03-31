@@ -299,22 +299,12 @@ return {
                 hide_inactive_statusline = false, -- Enabling this option, will hide inactive statuslines and replace them with a thin border instead. Should work with the standard **StatusLine** and **LuaLine**.
                 dim_inactive = false,             -- dims inactive windows
                 lualine_bold = false,             -- When `true`, section headers in the lualine theme will be bold
-                --- You can override specific color groups to use other groups or a hex color
-                --- function will be called with a ColorScheme table
-                ---@param colors ColorScheme
-                on_colors = function(colors)
-                end,
-                --- You can override specific highlights to use other groups or a hex color
-                --- function will be called with a Highlights and ColorScheme table
-                ---@param highlights Highlights
-                ---@param colors ColorScheme
-                on_highlights = function(highlights, colors)
-                end,
             })
             vim.cmd("colorscheme tokyonight")
         end
     },
 
+	-- Lua Line
     {
         'nvim-lualine/lualine.nvim',
         lazy = false,
@@ -358,7 +348,9 @@ return {
             wk.register({ ["<leader>h"] = { function() hop.hint_char1() end, "Hop" } }, { mode = "n" })
         end
     },
-    {
+
+	-- fzf-native
+	{
         'nvim-telescope/telescope-fzf-native.nvim',
         build =
         'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release; cmake --build build --config Release; cmake --install build --prefix build'
@@ -387,6 +379,7 @@ return {
 
             -- Location bindings
             wk.register({
+				["<leader>"] = {
                 f = {
                     name = "Find",
                     f = { function() require('telescope.builtin').find_files() end, "Files" },
@@ -412,14 +405,19 @@ return {
                         w = { function() require('telescope.builtin').lsp_dynamic_workspace_symbols() end, "In Workspace" },
                     }
                 }
+			},
+				g = {
+                    F = { function() require('telescope.builtin').find_files() end, "Files" },
+                    d = { function() require('telescope.builtin').lsp_definitions() end, "Definition" },
+                    i = { function() require('telescope.builtin').lsp_implementations() end, "Implementation" },
+                    t = { function() require('telescope.builtin').current_buffer_fuzzy_find() end, "Text in buffer" },
+				},
             }, {
                 mode = "n",
-                prefix = "<leader>",
+                prefix = "",
             })
         end
     },
-
-    { 'mhinz/vim-startify' },
 
     -- Nvim Tree
     {
@@ -460,28 +458,29 @@ return {
         end
     },
 
-    -- NeoGit
+    -- Fugitive
     {
-        'TimUntersberger/neogit',
-        dependencies = 'nvim-lua/plenary.nvim',
-        commit = "7be1e9358aaa617b0391e61952d936203e99fcf0",
+        'tpope/vim-fugitive',
+		lazy = false,
         config = function()
-            local neogit = require('neogit')
             local wk = require('which-key')
 
-            neogit.setup {}
-
             wk.register({
-                g = { function() neogit.open() end, "Git" }
-
+                g = { function() vim.cmd("Git") end, "Git" }
             }, { mode = 'n', prefix = "<leader>" })
         end
     },
 
-    {
-        'lewis6991/gitsigns.nvim',
-        config = function()
-            require('gitsigns').setup()
-        end
-    }
+	-- Undo Tree
+	{
+		'mbbill/undotree',
+		config = function()
+            local wk = require('which-key')
+
+            wk.register({
+                u = { function() vim.cmd("UndotreeToggle") end, "Undotree" }
+
+            }, { mode = 'n', prefix = "<leader>" })
+		end
+	},
 }
