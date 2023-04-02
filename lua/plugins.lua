@@ -169,7 +169,7 @@ return {
                         executable = {
                             command = codelldb_command,
                             args = { "--port", "${port}" },
-                            detached = not vim.fn.has('win32'),
+                            detached = not vim.loop.os_uname == "Windows_NT",
                         },
                     }
                 }
@@ -206,7 +206,7 @@ return {
                     ['<C-l>'] = cmp.mapping.scroll_docs(4),
                     ['<C-a>'] = cmp.mapping.complete(),
                     ['<C-e>'] = cmp.mapping.close(),
-                    ['<Tab>'] = cmp.mapping.confirm({
+                    ['<C-y>'] = cmp.mapping.confirm({
                         behavior = cmp.ConfirmBehavior.Insert,
                         select = true,
                     }),
@@ -483,4 +483,21 @@ return {
             }, { mode = 'n', prefix = "<leader>" })
 		end
 	},
+
+	-- Github Co-Pilot
+	{
+		'github/copilot.vim',
+		config = function()
+			local wk = require('which-key')
+
+			vim.cmd("Copilot setup")
+			wk.register({
+				["<leader>c"] = {
+					name = "Co-Pilot",
+					e = { function() vim.cmd("Copilot enable") end, "Enable Co-pilot" },
+					d = { function() vim.cmd("Copilot disable") end, "Disable Co-pilot" },
+				}
+			}, { mode = 'n'})
+		end
+	}
 }
