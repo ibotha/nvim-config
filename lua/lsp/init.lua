@@ -8,7 +8,7 @@ local server_configs = {
 	lua_ls = require("lsp.lua"),
 	rust_analyzer = default_server_config,
 	ruff_lsp = default_server_config,
-	jedi_language_server = default_server_config,
+	--jedi_language_server = default_server_config,
 	pylsp = require("lsp.python"),
 }
 
