@@ -90,6 +90,7 @@ return {
 						desc = "Delete current selection without existing snippet mode",
 					})
 				end,
+				build = "make install_jsregexp",
 			},
 			"saadparwaiz1/cmp_luasnip",
 		},

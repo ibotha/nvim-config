@@ -1,11 +1,15 @@
+require("lsp.filetypes")
 local utils = require("lsp.utils")
 
 local default_server_config = utils.base_config
 
 ---Configs for known LSP servers.
 local server_configs = {
-	lua_ls = require("lsp.lua").config,
+	lua_ls = require("lsp.lua"),
 	rust_analyzer = default_server_config,
+	ruff_lsp = default_server_config,
+	jedi_language_server = default_server_config,
+	pylsp = require("lsp.python"),
 }
 
 local mason_lspconfig = require("mason-lspconfig")
@@ -86,11 +90,21 @@ vim.diagnostic.config({
 
 local function use_icons_for_diagnostic_signs()
 	-- https://github.com/neovim/nvim-lspconfig/wiki/UI-Customization#change-diagnostic-symbols-in-the-sign-column-gutter
-	local signs = { Error = "󰅚 ", Warn = "󰀪 ", Hint = "󰌶 ", Info = " " }
-	for type, icon in pairs(signs) do
-		local hl = "DiagnosticSign" .. type
-		vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
-	end
+	vim.diagnostic.config({
+		signs = {
+			text = {
+				[vim.diagnostic.severity.ERROR] = "󰅚 ",
+				[vim.diagnostic.severity.WARN] = "󰀪 ",
+				[vim.diagnostic.severity.HINT] = "󰌶 ",
+				[vim.diagnostic.severity.INFO] = " ",
+			},
+			linehl = {},
+			numhl = {
+				[vim.diagnostic.severity.WARN] = "WarningMsg",
+				[vim.diagnostic.severity.ERROR] = "ErrorMsg",
+			},
+		},
+	})
 end
 
 use_icons_for_diagnostic_signs()

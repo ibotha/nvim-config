@@ -56,6 +56,7 @@ return {
 			{ "simrat39/rust-tools.nvim" },
 			{ "simrat39/rust-tools.nvim" },
 			"nvim-telescope/telescope.nvim",
+			{ "folke/neodev.nvim", opts = {} },
 		},
 	},
 }
