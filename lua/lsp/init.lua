@@ -10,6 +10,7 @@ local server_configs = {
 	ruff_lsp = default_server_config,
 	--jedi_language_server = default_server_config,
 	pylsp = require("lsp.python"),
+	cmake = default_server_config,
 }
 
 local mason_lspconfig = require("mason-lspconfig")

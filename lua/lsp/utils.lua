@@ -1,6 +1,6 @@
 local M = {}
 
-local function setup_lsp_keymaps(_client, bufnr)
+local function setup_lsp_keymaps(_, bufnr)
 	local wk = require("which-key")
 
 	wk.add({

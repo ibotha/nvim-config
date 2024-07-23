@@ -1,6 +1,7 @@
 local formatters_by_ft = {
 	lua = { "stylua" },
 	python = { "ruff" },
+	cmake = { "cmakelang" },
 }
 
 local prettierd_filetypes = {
@@ -16,6 +17,7 @@ local prettierd_filetypes = {
 	"json",
 	"jsonc",
 	"yaml",
+	"toml",
 	"markdown",
 	"markdown.mdx",
 	"graphql",
