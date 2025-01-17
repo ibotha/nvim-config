@@ -53,8 +53,12 @@ return {
 			},
 			{ "williamboman/mason-lspconfig.nvim", config = true },
 			"WhoIsSethDaniel/mason-tool-installer.nvim",
-			{ "simrat39/rust-tools.nvim" },
-			{ "simrat39/rust-tools.nvim" },
+			-- { "rust-lang/rust.vim" },
+			{
+				"mrcjkb/rustaceanvim",
+				version = "^5", -- Recommended
+				lazy = false, -- This plugin is already lazy
+			},
 			"nvim-telescope/telescope.nvim",
 			{ "folke/neodev.nvim", opts = {} },
 		},

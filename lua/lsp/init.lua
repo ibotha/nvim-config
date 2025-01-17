@@ -3,12 +3,48 @@ local utils = require("lsp.utils")
 
 local default_server_config = utils.base_config
 
+vim.g.rustaceanvim = {
+	-- Plugin configuration
+	tools = {},
+	-- LSP configuration
+	server = vim.tbl_deep_extend("force", default_server_config, {
+		default_settings = {
+			-- rust-analyzer language server configuration
+			["rust-analyzer"] = {},
+		},
+		on_attach = function(client, buffer)
+			default_server_config.on_attach(client, buffer)
+			local bufnr = vim.api.nvim_get_current_buf()
+			local wk = require("which-key")
+			wk.add({
+				{
+					"<leader>ar",
+					function()
+						vim.cmd.RustLsp("codeAction") -- supports rust-analyzer's grouping
+					end,
+					desc = "Rust actions",
+					silent = true,
+					buffer = bufnr,
+				},
+				{
+					"<leader>ah",
+					function()
+						vim.cmd.RustLsp({ "hover", "actions" })
+					end,
+					desc = "RustHover",
+					silent = true,
+					buffer = bufnr,
+				},
+			})
+		end,
+	}),
+	-- DAP configuration
+	dap = {},
+}
 ---Configs for known LSP servers.
 local server_configs = {
 	lua_ls = require("lsp.lua"),
-	rust_analyzer = default_server_config,
-	ruff_lsp = default_server_config,
-	--jedi_language_server = default_server_config,
+	ruff = default_server_config,
 	pylsp = require("lsp.python"),
 	cmake = default_server_config,
 }
